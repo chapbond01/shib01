@@ -1,0 +1,52 @@
+
+Os seguintes software livres foram obtidos para a criação desta máquina:
+
+- VirtualBox - http://download.virtualbox.org/virtualbox/4.2.12/VirtualBox-4.2.12-84980-Win.exe
+- VBoxVMService - http://sourceforge.net/projects/vboxvmservice/files/latest/download
+- Linux Mint - http://mint.c3sl.ufpr.br//stable/14/linuxmint-14.1-cinnamon-dvd-32bit.iso
+- Redmine - http://rubyforge.org/frs/download.php/76933/redmine-2.3.1.tar.gz
+- MediaWiki - http://download.wikimedia.org/mediawiki/1.20/mediawiki-1.20.5.tar.gz
+- Ferramentas e bibliotecas diversas (ver abaixo)
+
+Na máquina hospedeira, os únicos softwares instalados foram o VirtualBox e o VBoxVMService. O primeiro executa a máquina virtual em si. Já o segundo é utilizado para gerar um serviço do Windows que inicializa a máquina virtual, sem precisar logar no Windows.
+
+Geração da máquina virtual Linux Mint 14 e instalaçção das ferramentas.
+
+- No VirtualBox, criar uma nova máquina virtual e dar o boot utilizando a .iso do Linux.
+- Efetuar a instalação do Linux Mint no disco virtual.
+- Configurar o Proxy, se necessário, em /etc/environment, /etc/apt/apt.conf e Firefox para poder baixar demais ferramentas.
+- Executar aptitude install apache2 ruby php5
+- Executar gem install passenger
+- Pacotes ImageMagick e libpng16 (Opcional)
+  - Utilizado pelo Redmine e MediaWiki para lidar com tratamento de imagens.
+- Redmine
+  - Descompactar arquivo em /var/www/redmine-app
+  - Criar base de dados e usuário do Redmine
+  - Configurar base de dados em config/database.yml
+  - Executar sudo bundle install
+  - Executar rake db:migrate
+  - Executar rake generate_secret_token
+  - Executar rake load_data_default
+  - Executar ln -s /var/www/redmine-app/public/ /var/www/redmine
+  - Configurar Redmine no Apache
+  - Executar sudo /etc/init.d/apache2 restart
+- MediaWiki
+  - Descompactar arquivo em /var/www/mediawiki
+  - Executar sudo /etc/init.d/apache2 restart
+  - Criar base de dados e usuário do MediaWiki
+  - Acessar localhost/mediawiki e seguir orientações do instalador
+  - Não esquecer de colocar o arquivo LocalSettings.php, gerado pelo instalador, na mesma pasta do index.php
+  - Executar chmod g+w /var/www/mediawiki/images/ para permitir o upload de arquivos, caso habilitado.
+
+Como o VBoxVMService já instalado no Windows, configure o VBoxVmService.ini, conforme modelo abaixo:
+
+[Settings]
+ServiceName=VBoxVmService
+VBOX_USER_HOME="C:\Documents and Settings\user\.VirtualBox"
+RunWebService=no
+PauseShutdown=5000
+
+[Vm0]
+VmName="Linux Mint"
+ShutdownMethod=savestate
+AutoStart=yes
